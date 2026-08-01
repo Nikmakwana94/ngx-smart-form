@@ -231,4 +231,171 @@ describe('SmartFormFieldComponent', () => {
 
     expect(control.value).toBe('Updated');
   });
+
+  describe('Phase 3 field types', () => {
+    it('should render password input with correct type', () => {
+      setupField(
+        'password',
+        {
+          type: 'password',
+          label: 'Password',
+          placeholder: 'Enter your password',
+          validation: { required: true, minLength: 8 },
+        },
+        new FormControl(''),
+      );
+
+      const input = fixture.debugElement.query(By.css('input[type="password"]'));
+      expect(input).toBeTruthy();
+      expect(input.nativeElement.placeholder).toBe('Enter your password');
+    });
+
+    it('should render select with options and placeholder', () => {
+      setupField(
+        'country',
+        {
+          type: 'select',
+          label: 'Country',
+          placeholder: 'Select a country',
+          options: [
+            { label: 'India', value: 'IN' },
+            { label: 'United States', value: 'US', disabled: true },
+          ],
+        },
+        new FormControl(null),
+      );
+
+      const select = fixture.debugElement.query(By.css('select'));
+      const options = fixture.debugElement.queryAll(By.css('option'));
+
+      expect(select).toBeTruthy();
+      expect(options.length).toBe(3);
+      expect(options[0].nativeElement.textContent.trim()).toBe('Select a country');
+      expect(options[2].nativeElement.disabled).toBeTrue();
+    });
+
+    it('should reflect disabled select field state', () => {
+      const control = new FormControl({ value: null, disabled: true });
+      setupField(
+        'country',
+        {
+          type: 'select',
+          label: 'Country',
+          options: [{ label: 'India', value: 'IN' }],
+        },
+        control,
+      );
+
+      expect(fixture.debugElement.query(By.css('select')).nativeElement.disabled).toBeTrue();
+    });
+
+    it('should render checkbox with boolean value and default false', () => {
+      setupField(
+        'terms',
+        { type: 'checkbox', label: 'Accept Terms' },
+        new FormControl(false),
+      );
+
+      const checkbox = fixture.debugElement.query(By.css('input[type="checkbox"]'));
+      expect(checkbox).toBeTruthy();
+      expect(checkbox.nativeElement.checked).toBeFalse();
+      expect(fixture.debugElement.query(By.css('label')).nativeElement.textContent.trim()).toBe(
+        'Accept Terms',
+      );
+    });
+
+    it('should reflect checked checkbox state', () => {
+      setupField(
+        'terms',
+        { type: 'checkbox', label: 'Accept Terms' },
+        new FormControl(true),
+      );
+
+      expect(
+        fixture.debugElement.query(By.css('input[type="checkbox"]')).nativeElement.checked,
+      ).toBeTrue();
+    });
+
+    it('should enforce required checkbox behavior via requiredTrue', () => {
+      const control = new FormControl(false, Validators.requiredTrue);
+      setupField(
+        'terms',
+        {
+          type: 'checkbox',
+          label: 'Accept Terms',
+          validation: { required: true },
+        },
+        control,
+        true,
+      );
+
+      expect(control.valid).toBeFalse();
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-error'))).toBeTruthy();
+
+      control.setValue(true);
+      fixture.detectChanges();
+
+      expect(control.valid).toBeTrue();
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-error'))).toBeNull();
+    });
+
+    it('should render radio options with unique IDs and update FormControl value', () => {
+      const control = new FormControl<string | null>(null);
+      setupField(
+        'gender',
+        {
+          type: 'radio',
+          label: 'Gender',
+          options: [
+            { label: 'Male', value: 'male' },
+            { label: 'Female', value: 'female' },
+          ],
+        },
+        control,
+      );
+
+      const radios = fixture.debugElement.queryAll(By.css('input[type="radio"]'));
+      expect(radios.length).toBe(2);
+      expect(radios[0].nativeElement.id).toBe('ngx-smart-form-gender-0');
+      expect(radios[1].nativeElement.id).toBe('ngx-smart-form-gender-1');
+      expect(fixture.debugElement.query(By.css('[role="radiogroup"]'))).toBeTruthy();
+
+      radios[1].nativeElement.click();
+      fixture.detectChanges();
+
+      expect(control.value).toBe('female');
+    });
+
+    it('should render date input with min and max attributes', () => {
+      setupField(
+        'birthDate',
+        {
+          type: 'date',
+          label: 'Date of Birth',
+          defaultValue: '2000-01-15',
+          min: '1900-01-01',
+          max: '2020-12-31',
+        },
+        new FormControl('2000-01-15'),
+      );
+
+      const input = fixture.debugElement.query(By.css('input[type="date"]'));
+      expect(input).toBeTruthy();
+      expect(input.nativeElement.value).toBe('2000-01-15');
+      expect(input.nativeElement.getAttribute('min')).toBe('1900-01-01');
+      expect(input.nativeElement.getAttribute('max')).toBe('2020-12-31');
+    });
+
+    it('should keep readonly checkbox-like fields enabled for non-checkbox types', () => {
+      const control = new FormControl('john');
+      setupField(
+        'username',
+        { type: 'text', label: 'Username', readonly: true },
+        control,
+      );
+
+      expect(fixture.debugElement.query(By.css('input')).nativeElement.readOnly).toBeTrue();
+      expect(control.disabled).toBeFalse();
+    });
+  });
 });

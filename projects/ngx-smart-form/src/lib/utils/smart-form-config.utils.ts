@@ -4,6 +4,7 @@ import {
   SmartFormFieldConfig,
   SmartFormFieldsConfig,
   SmartFormStructuredConfig,
+  SmartFormSubmitConfig,
   SmartFormUpdateOn,
 } from '../models/form-config';
 import { SmartFormFieldValidation } from '../models/validation-config';
@@ -11,9 +12,10 @@ import { SmartFormFieldValidation } from '../models/validation-config';
 export interface NormalizedSmartFormConfig {
   fields: SmartFormFieldsConfig;
   updateOn?: SmartFormUpdateOn;
+  submit?: SmartFormSubmitConfig;
 }
 
-const STRUCTURED_CONFIG_KEYS = new Set(['fields', 'updateOn']);
+const STRUCTURED_CONFIG_KEYS = new Set(['fields', 'updateOn', 'submit']);
 
 function isFieldConfig(value: unknown): value is SmartFormFieldConfig {
   return (
@@ -66,6 +68,7 @@ export function normalizeSmartFormConfig(
     return {
       fields: config.fields,
       updateOn: config.updateOn,
+      submit: config.submit,
     };
   }
 

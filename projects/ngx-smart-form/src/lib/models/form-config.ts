@@ -3,12 +3,18 @@ import { Type } from '@angular/core';
 import {
   SmartFormDateRangeValue,
   SmartFormFieldType,
-  SmartFormSelectOption,
+  SmartFormOption,
 } from './field-types';
 import { SmartFormFieldValidation } from './validation-config';
 
 /** When the form or individual controls emit value updates. */
 export type SmartFormUpdateOn = 'change' | 'blur' | 'submit';
+
+/** Submit button configuration for structured forms. */
+export interface SmartFormSubmitConfig {
+  label?: string;
+  visible?: boolean;
+}
 
 /** Common properties shared by all field configurations. */
 export interface SmartFormFieldConfigBase {
@@ -42,8 +48,20 @@ export interface SmartFormNumberFieldConfig extends SmartFormFieldConfigBase {
 }
 
 export interface SmartFormSelectFieldConfig extends SmartFormFieldConfigBase {
-  type: 'select' | 'multi-select' | 'radio' | 'autocomplete';
-  options: SmartFormSelectOption[];
+  type: 'select';
+  options: SmartFormOption[];
+  defaultValue?: unknown;
+}
+
+export interface SmartFormRadioFieldConfig extends SmartFormFieldConfigBase {
+  type: 'radio';
+  options: SmartFormOption[];
+  defaultValue?: unknown;
+}
+
+export interface SmartFormMultiSelectFieldConfig extends SmartFormFieldConfigBase {
+  type: 'multi-select' | 'autocomplete';
+  options: SmartFormOption[];
   defaultValue?: unknown;
 }
 
@@ -83,6 +101,8 @@ export type SmartFormFieldConfig =
   | SmartFormTextFieldConfig
   | SmartFormNumberFieldConfig
   | SmartFormSelectFieldConfig
+  | SmartFormRadioFieldConfig
+  | SmartFormMultiSelectFieldConfig
   | SmartFormCheckboxFieldConfig
   | SmartFormDateFieldConfig
   | SmartFormDateRangeFieldConfig
@@ -96,6 +116,7 @@ export type SmartFormFieldsConfig = Record<string, SmartFormFieldConfig>;
 export interface SmartFormStructuredConfig {
   fields: SmartFormFieldsConfig;
   updateOn?: SmartFormUpdateOn;
+  submit?: SmartFormSubmitConfig;
 }
 
 /**

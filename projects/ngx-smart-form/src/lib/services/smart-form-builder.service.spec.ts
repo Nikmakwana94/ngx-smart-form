@@ -98,6 +98,24 @@ describe('SmartFormBuilderService', () => {
       expect(control?.valid).toBeTrue();
     });
 
+    it('should apply requiredTrue validator for checkbox fields', () => {
+      const config: SmartFormConfig = {
+        terms: {
+          type: 'checkbox',
+          validation: { required: true },
+        },
+      };
+
+      const form = service.buildForm(config);
+      const control = form.get('terms');
+
+      expect(control?.value).toBeFalse();
+      expect(control?.valid).toBeFalse();
+
+      control?.setValue(true);
+      expect(control?.valid).toBeTrue();
+    });
+
     it('should support required shorthand on the field', () => {
       const config: SmartFormConfig = {
         name: {

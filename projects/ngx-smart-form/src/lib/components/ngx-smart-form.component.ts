@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { SmartFormConfig, SmartFormFieldConfig } from '../models';
+import {
+  SmartFormConfig,
+  SmartFormFieldConfig,
+  SmartFormSubmitConfig,
+} from '../models';
 import { SmartFormBuilderService } from '../services/smart-form-builder.service';
 import { normalizeSmartFormConfig } from '../utils/smart-form-config.utils';
 import { SmartFormFieldComponent } from './field-renderer/smart-form-field.component';
@@ -17,6 +21,11 @@ export interface SmartFormFieldEntry {
   key: string;
   config: SmartFormFieldConfig;
 }
+
+const DEFAULT_SUBMIT_CONFIG: SmartFormSubmitConfig = {
+  label: 'Submit',
+  visible: true,
+};
 
 @Component({
   selector: 'ngx-smart-form',
@@ -39,9 +48,15 @@ export interface SmartFormFieldEntry {
             />
           }
 
-          <button type="submit" class="ngx-smart-form-submit">
-            Submit
-          </button>
+          @if (submitConfig().visible !== false) {
+            <button
+              type="submit"
+              class="ngx-smart-form-submit"
+              [disabled]="form.invalid"
+            >
+              {{ submitConfig().label ?? 'Submit' }}
+            </button>
+          }
         </form>
       }
     </div>
@@ -61,7 +76,7 @@ export interface SmartFormFieldEntry {
       cursor: pointer;
     }
 
-    .ngx-smart-form-submit:hover {
+    .ngx-smart-form-submit:hover:not(:disabled) {
       background: #1d4ed8;
     }
 
@@ -69,28 +84,24 @@ export interface SmartFormFieldEntry {
       outline: 2px solid #3b82f6;
       outline-offset: 2px;
     }
+
+    .ngx-smart-form-submit:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
   `,
 })
 export class NgxSmartFormComponent {
   private readonly builder = inject(SmartFormBuilderService);
 
-  /** Form configuration object. Supports flat or structured `{ fields }` shape. */
   readonly config = input<SmartFormConfig | null>(null);
-
-  /** Emitted when a FormGroup has been built from the current configuration. */
   readonly formReady = output<FormGroup>();
-
-  /** Emitted when the form is submitted and valid. */
   readonly submitted = output<Record<string, unknown>>();
 
-  /** The internally built FormGroup, available after configuration is provided. */
   readonly formGroup = signal<FormGroup | null>(null);
-
-  /** Normalized field entries derived from the current configuration. */
   readonly fieldEntries = signal<SmartFormFieldEntry[]>([]);
-
-  /** Tracks whether a submit has been attempted to reveal validation errors. */
   readonly submitAttempted = signal(false);
+  readonly submitConfig = signal<SmartFormSubmitConfig>(DEFAULT_SUBMIT_CONFIG);
 
   constructor() {
     effect(() => {
@@ -100,6 +111,7 @@ export class NgxSmartFormComponent {
         this.formGroup.set(null);
         this.fieldEntries.set([]);
         this.submitAttempted.set(false);
+        this.submitConfig.set(DEFAULT_SUBMIT_CONFIG);
         return;
       }
 
@@ -110,6 +122,10 @@ export class NgxSmartFormComponent {
           config: fieldConfig,
         })),
       );
+      this.submitConfig.set({
+        ...DEFAULT_SUBMIT_CONFIG,
+        ...normalized.submit,
+      });
 
       const form = this.builder.buildForm(config);
       this.formGroup.set(form);

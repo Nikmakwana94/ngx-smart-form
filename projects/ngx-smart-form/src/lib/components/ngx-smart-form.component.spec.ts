@@ -192,4 +192,71 @@ describe('NgxSmartFormComponent', () => {
       expect(fixture.debugElement.query(By.css('.ngx-smart-form-error'))).toBeTruthy();
     });
   });
+
+  describe('Phase 3 submit configuration', () => {
+    it('should render the default submit label', () => {
+      fixture.componentRef.setInput('config', {
+        name: { type: 'text', defaultValue: 'Jane' },
+      });
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(By.css('.ngx-smart-form-submit'));
+      expect(button.nativeElement.textContent.trim()).toBe('Submit');
+    });
+
+    it('should render a custom submit label from structured config', () => {
+      fixture.componentRef.setInput('config', {
+        fields: {
+          name: { type: 'text', defaultValue: 'Jane' },
+        },
+        submit: {
+          label: 'Create User',
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-submit')).nativeElement.textContent.trim()).toBe(
+        'Create User',
+      );
+    });
+
+    it('should hide the submit button when visible is false', () => {
+      fixture.componentRef.setInput('config', {
+        fields: {
+          name: { type: 'text', defaultValue: 'Jane' },
+        },
+        submit: {
+          visible: false,
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-submit'))).toBeNull();
+    });
+
+    it('should disable the submit button while the form is invalid', () => {
+      fixture.componentRef.setInput('config', {
+        name: {
+          type: 'text',
+          validation: { required: true },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-submit')).nativeElement.disabled).toBeTrue();
+    });
+
+    it('should enable the submit button when the form becomes valid', () => {
+      fixture.componentRef.setInput('config', {
+        name: {
+          type: 'text',
+          defaultValue: 'Jane',
+          validation: { required: true },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-submit')).nativeElement.disabled).toBeFalse();
+    });
+  });
 });

@@ -18,12 +18,15 @@ export type SmartFormFieldType =
   | 'autocomplete'
   | 'custom';
 
-/** Option model for select, multi-select, radio, and autocomplete fields. */
-export interface SmartFormSelectOption<T = unknown> {
+/** Option model for select, radio, and other option-based fields. */
+export interface SmartFormOption<T = unknown> {
   label: string;
   value: T;
   disabled?: boolean;
 }
+
+/** @deprecated Use {@link SmartFormOption} instead. */
+export type SmartFormSelectOption<T = unknown> = SmartFormOption<T>;
 
 /** Date range value model for date-range fields. */
 export interface SmartFormDateRangeValue {

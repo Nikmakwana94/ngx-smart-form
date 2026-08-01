@@ -14,7 +14,11 @@ export function buildValidators(
   const validators: ValidatorFn[] = [];
 
   if (validation.required) {
-    validators.push(Validators.required);
+    if (fieldType === 'checkbox') {
+      validators.push(Validators.requiredTrue);
+    } else {
+      validators.push(Validators.required);
+    }
   }
 
   if (validation.min !== undefined) {

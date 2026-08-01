@@ -2,7 +2,7 @@
 
 A flexible, configuration-driven dynamic form library for Angular applications. Built on Angular Reactive Forms with strict TypeScript typing and no third-party UI dependencies.
 
-> **Status:** Phase 2 complete — declarative configuration is converted into Reactive Forms and rendered with native HTML controls for basic field types. Additional field types and advanced layouts are planned.
+> **Status:** Phase 3 complete — native HTML rendering for core field types including password, select, checkbox, radio, and date. Advanced field types and nested forms are planned.
 
 ## Features
 
@@ -11,13 +11,13 @@ A flexible, configuration-driven dynamic form library for Angular applications. 
 | Configuration-driven form models (`SmartFormConfig`) | Available |
 | Reactive Forms engine (`SmartFormBuilderService`) | Available |
 | Declarative validation mapping | Available |
-| Native HTML field rendering (`text`, `email`, `number`, `textarea`) | Available |
+| Native HTML field rendering | Available |
 | Validation error messages UI | Available |
+| Configurable submit button | Available |
 | Default values and disabled controls | Available |
 | Structured config with `updateOn` | Available |
-| Extensible field type definitions | Available |
 | UI-framework independence (no Material, Bootstrap, etc.) | Available |
-| Additional field types (select, checkbox, date, etc.) | Planned |
+| Multi-select, autocomplete, file, date-range | Planned |
 | Nested forms and form arrays | Planned |
 | Conditional fields and async validation | Planned |
 | Custom component fields | Planned |
@@ -64,20 +64,14 @@ import {
 })
 export class UserFormComponent {
   readonly formConfig: SmartFormConfig = {
-    name: {
-      type: 'text',
-      label: 'Name',
-      validation: { required: true },
+    fields: {
+      name: { type: 'text', label: 'Name', validation: { required: true } },
+      email: { type: 'email', label: 'Email', validation: { required: true } },
+      age: { type: 'number', label: 'Age', min: 18 },
     },
-    email: {
-      type: 'email',
-      label: 'Email',
-      validation: { required: true, email: true },
-    },
-    age: {
-      type: 'number',
-      label: 'Age',
-      min: 18,
+    submit: {
+      label: 'Create User',
+      visible: true,
     },
   };
 
@@ -93,7 +87,7 @@ export class UserFormComponent {
 
 ## Dynamic Form Rendering
 
-Phase 2 renders native HTML controls from configuration. The component builds a `FormGroup` internally and binds each rendered field to the same controls created by `SmartFormBuilderService`.
+The component builds a `FormGroup` internally and renders native HTML controls from configuration.
 
 ```typescript
 formConfig: SmartFormConfig = {
@@ -102,33 +96,20 @@ formConfig: SmartFormConfig = {
       type: 'text',
       label: 'Full Name',
       placeholder: 'Enter your name',
-      validation: {
-        required: true,
-        minLength: 3,
-        messages: {
-          required: 'Full name is required',
-          minLength: 'Name must be at least 3 characters',
-        },
-      },
+      validation: { required: true, minLength: 3 },
     },
-
     email: {
       type: 'email',
       label: 'Email',
       placeholder: 'you@example.com',
-      validation: {
-        required: true,
-        email: true,
-      },
+      validation: { required: true, email: true },
     },
-
     age: {
       type: 'number',
       label: 'Age',
       min: 18,
       max: 100,
     },
-
     description: {
       type: 'textarea',
       label: 'Description',
@@ -147,32 +128,109 @@ formConfig: SmartFormConfig = {
 </ngx-smart-form>
 ```
 
-### Currently rendered field types
+## Field Examples
 
-| Type | Rendered |
-| --- | --- |
-| `text` | Yes |
-| `email` | Yes |
-| `number` | Yes |
-| `textarea` | Yes |
-| `password` | Planned |
-| `select` | Planned |
-| `multi-select` | Planned |
-| `checkbox` | Planned |
-| `radio` | Planned |
-| `date` | Planned |
-| `date-range` | Planned |
-| `file` | Planned |
-| `autocomplete` | Planned |
-| `custom` | Planned |
+### Password
+
+```typescript
+{
+  type: 'password',
+  label: 'Password',
+  validation: {
+    required: true,
+    minLength: 8,
+  },
+}
+```
+
+### Select
+
+```typescript
+{
+  type: 'select',
+  label: 'Country',
+  placeholder: 'Select a country',
+  options: [
+    { label: 'India', value: 'IN' },
+    { label: 'USA', value: 'US' },
+  ],
+}
+```
+
+### Checkbox
+
+```typescript
+{
+  type: 'checkbox',
+  label: 'Accept Terms',
+  validation: {
+    required: true,
+  },
+}
+```
+
+### Radio
+
+```typescript
+{
+  type: 'radio',
+  label: 'Gender',
+  options: [
+    { label: 'Male', value: 'male' },
+    { label: 'Female', value: 'female' },
+  ],
+}
+```
+
+### Date
+
+```typescript
+{
+  type: 'date',
+  label: 'Date of Birth',
+  min: '1900-01-01',
+  max: '2020-12-31',
+}
+```
+
+### Submit configuration
+
+```typescript
+{
+  fields: {
+    name: { type: 'text', label: 'Name' },
+  },
+  submit: {
+    label: 'Create User',
+    visible: true,
+  },
+}
+```
+
+## Supported Field Types
+
+| Type | FormControl | UI rendering |
+| --- | --- | --- |
+| `text` | Available | Available |
+| `email` | Available | Available |
+| `password` | Available | Available |
+| `number` | Available | Available |
+| `textarea` | Available | Available |
+| `select` | Available | Available |
+| `checkbox` | Available | Available |
+| `radio` | Available | Available |
+| `date` | Available | Available |
+| `multi-select` | Available | Planned |
+| `autocomplete` | Available | Planned |
+| `date-range` | Available | Planned |
+| `file` | Available | Planned |
+| `custom` | Planned | Planned |
 
 Fields with `hidden: true` remain in the `FormGroup` but are not rendered visually.
 
 ## Reactive Form Configuration
 
-The library converts declarative configuration into Angular Reactive Forms. You can use either a **flat field map** or a **structured config** with a `fields` wrapper.
-
-### Structured configuration
+Use either a **flat field map** or a **structured config** with a `fields` wrapper.
 
 ```typescript
 formConfig: SmartFormConfig = {
@@ -180,38 +238,15 @@ formConfig: SmartFormConfig = {
     name: {
       type: 'text',
       label: 'Name',
-      validation: {
-        required: true,
-        minLength: 3,
-      },
+      required: true, // shorthand for validation.required
     },
-    email: {
-      type: 'email',
-      label: 'Email',
-      validation: {
-        required: true,
-        email: true,
-      },
+    age: {
+      type: 'number',
+      label: 'Age',
+      min: 18, // shorthand for validation.min
     },
   },
   updateOn: 'blur',
-};
-```
-
-### Flat configuration (also supported)
-
-```typescript
-formConfig: SmartFormConfig = {
-  name: {
-    type: 'text',
-    label: 'Name',
-    required: true, // shorthand for validation.required
-  },
-  age: {
-    type: 'number',
-    label: 'Age',
-    min: 18, // shorthand for validation.min
-  },
 };
 ```
 
@@ -222,36 +257,14 @@ import { inject } from '@angular/core';
 import { SmartFormBuilderService, SmartFormConfig } from 'ngx-smart-form';
 
 const builder = inject(SmartFormBuilderService);
-
-const config: SmartFormConfig = {
+const form = builder.buildForm({
   username: { type: 'text', defaultValue: 'john', disabled: true },
-};
-
-const form = builder.buildForm(config);
+});
 ```
-
-## Configuration
-
-Forms are defined as a configuration object. Each field specifies a `type`, optional display properties, and optional validation rules.
-
-```typescript
-const formConfig: SmartFormConfig = {
-  country: {
-    type: 'select',
-    label: 'Country',
-    options: [
-      { label: 'United States', value: 'US' },
-      { label: 'Canada', value: 'CA' },
-    ],
-  },
-};
-```
-
-See the `SmartFormFieldConfig` union type for all supported field shapes.
 
 ## Validation
 
-Validation is configured via the `validation` property or field-level shorthand (`required`, `min`, `max` on number fields):
+Validation is configured via the `validation` property or field-level shorthand:
 
 ```typescript
 {
@@ -270,71 +283,32 @@ Validation is configured via the `validation` property or field-level shorthand 
 }
 ```
 
-Validation errors are shown when a control is **invalid** and **touched**, or after a submit attempt.
+Errors are shown when a control is **invalid** and **touched**, or after a submit attempt.
 
-**Currently supported** (mapped to Angular `Validators`):
+**Supported validators:** `required`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `email`, custom sync validators.
 
-- `required`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `email`
-- Custom sync validators via `validation.validators`
-- Custom messages via `validation.messages`
-
-**Planned:**
-
-- Async validators
-- Conditional validation via `when`
-
-## Supported Field Types
-
-| Type | FormControl support | UI rendering |
-| --- | --- | --- |
-| `text` | Available | Available |
-| `email` | Available | Available |
-| `number` | Available | Available |
-| `textarea` | Available | Available |
-| `password` | Available | Planned |
-| `select` | Available | Planned |
-| `multi-select` | Available | Planned |
-| `checkbox` | Available | Planned |
-| `radio` | Available | Planned |
-| `date` | Available | Planned |
-| `date-range` | Available | Planned |
-| `file` | Available | Planned |
-| `autocomplete` | Available | Planned |
-| `custom` | Planned | Planned |
+Checkbox `required` uses `Validators.requiredTrue` so the form stays invalid until checked.
 
 ## Roadmap
 
-### Phase 1 ✅
+### Phase 1 ✅ — Reactive Form Engine
 
-- Dynamic form configuration
-- Reactive Forms engine
-- Validation mapping
-- Default values and disabled controls
+### Phase 2 ✅ — Visual Field Renderer (text, email, number, textarea)
 
-### Phase 2 ✅
+### Phase 3 ✅ — Additional native field types + submit configuration
 
-- Visual field renderer
-- Native HTML controls for basic field types
-- Validation error messages
-- Form submission API
+### Phase 4
 
-### Phase 3
-
-- Additional field types (select, checkbox, radio, date, file)
+- Multi-select, autocomplete, file, date-range
 - Nested forms and form arrays
 - Conditional fields
 - Custom components
 - Async validation
-- UI adapters (Material, Bootstrap, etc.)
+- UI adapters
 
 ## Contributing
 
-Contributions are welcome. Please open an issue or pull request on [GitHub](https://github.com/Nikmakwana94/ngx-smart-form).
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes with tests where applicable
-4. Submit a pull request
+Contributions are welcome on [GitHub](https://github.com/Nikmakwana94/ngx-smart-form).
 
 ## License
 

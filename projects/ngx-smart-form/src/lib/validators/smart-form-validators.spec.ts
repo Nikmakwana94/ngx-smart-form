@@ -40,4 +40,11 @@ describe('buildValidators', () => {
 
     expect(validators).toContain(custom);
   });
+
+  it('should use requiredTrue for checkbox fields', () => {
+    const validators = buildValidators({ required: true }, 'checkbox');
+
+    expect(validators).toContain(Validators.requiredTrue);
+    expect(validators).not.toContain(Validators.required);
+  });
 });
