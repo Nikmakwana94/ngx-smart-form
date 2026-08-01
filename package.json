@@ -1,6 +1,6 @@
 {
-  "name": "ngx-smart-form-workspace",
-  "version": "0.0.0",
+  "name": "@nik_makwana/ngx-smart-form",
+  "version": "0.9.0",
   "private": true,
   "description": "Development workspace for the ngx-smart-form Angular library.",
   "scripts": {
