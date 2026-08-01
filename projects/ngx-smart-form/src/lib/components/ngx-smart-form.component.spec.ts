@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 
 import { SmartFormBuilderService } from '../services/smart-form-builder.service';
 import { NgxSmartFormComponent } from './ngx-smart-form.component';
@@ -108,5 +109,87 @@ describe('NgxSmartFormComponent', () => {
     fixture.detectChanges();
 
     expect(builder.buildForm).toHaveBeenCalled();
+  });
+
+  describe('Phase 2 visual rendering', () => {
+    it('should render multiple configured fields', () => {
+      fixture.componentRef.setInput('config', {
+        name: { type: 'text', label: 'Name' },
+        email: { type: 'email', label: 'Email' },
+        age: { type: 'number', label: 'Age' },
+        description: { type: 'textarea', label: 'Description' },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('input[type="text"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('input[type="email"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('input[type="number"]'))).toBeTruthy();
+      expect(fixture.debugElement.query(By.css('textarea'))).toBeTruthy();
+    });
+
+    it('should keep hidden fields in the FormGroup without rendering them', () => {
+      fixture.componentRef.setInput('config', {
+        visible: { type: 'text', label: 'Visible' },
+        hiddenField: { type: 'text', label: 'Hidden', hidden: true },
+      });
+      fixture.detectChanges();
+
+      const form = component.formGroup();
+      expect(form?.contains('hiddenField')).toBeTrue();
+      expect(fixture.debugElement.queryAll(By.css('.ngx-smart-form-field')).length).toBe(1);
+    });
+
+    it('should bind rendered controls to the builder FormGroup', () => {
+      fixture.componentRef.setInput('config', {
+        name: { type: 'text', defaultValue: 'Jane' },
+      });
+      fixture.detectChanges();
+
+      const input = fixture.debugElement.query(By.css('input'));
+      input.nativeElement.value = 'Updated';
+      input.nativeElement.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      expect(component.formGroup()?.get('name')?.value).toBe('Updated');
+    });
+
+    it('should emit submitted with form value when valid', () => {
+      const submittedValues: Record<string, unknown>[] = [];
+      component.submitted.subscribe((value) => submittedValues.push(value));
+
+      fixture.componentRef.setInput('config', {
+        name: { type: 'text', defaultValue: 'Jane' },
+        email: { type: 'email', defaultValue: 'jane@example.com' },
+      });
+      fixture.detectChanges();
+
+      fixture.debugElement.query(By.css('form')).triggerEventHandler('ngSubmit', null);
+
+      expect(submittedValues.length).toBe(1);
+      expect(submittedValues[0]).toEqual({
+        name: 'Jane',
+        email: 'jane@example.com',
+      });
+    });
+
+    it('should not emit submitted when invalid and should mark controls touched', () => {
+      const submittedValues: Record<string, unknown>[] = [];
+      component.submitted.subscribe((value) => submittedValues.push(value));
+
+      fixture.componentRef.setInput('config', {
+        name: {
+          type: 'text',
+          validation: { required: true },
+        },
+      });
+      fixture.detectChanges();
+
+      fixture.debugElement.query(By.css('form')).triggerEventHandler('ngSubmit', null);
+      fixture.detectChanges();
+
+      expect(submittedValues.length).toBe(0);
+      expect(component.formGroup()?.get('name')?.touched).toBeTrue();
+      expect(fixture.debugElement.query(By.css('.ngx-smart-form-error'))).toBeTruthy();
+    });
   });
 });
