@@ -333,4 +333,44 @@ describe('NgxSmartFormComponent', () => {
       expect(fixture.debugElement.queryAll(By.css('input[type="text"]')).length).toBe(1);
     });
   });
+
+  describe('Pre-v1 value contract', () => {
+    it('should include hidden field values in submitted output via getRawValue', () => {
+      fixture.componentRef.setInput('config', {
+        fields: {
+          shownField: { type: 'text', label: 'Shown', defaultValue: 'visible' },
+          hiddenField: {
+            type: 'text',
+            label: 'Hidden',
+            hidden: true,
+            defaultValue: 'secret',
+          },
+        },
+      });
+      fixture.detectChanges();
+
+      const form = component.formGroup()!;
+      const hiddenControl = form.get('hiddenField');
+
+      expect(hiddenControl).toBeTruthy();
+      expect(hiddenControl?.disabled).toBeTrue();
+      expect(form.value).toEqual({ shownField: 'visible' });
+      expect(form.getRawValue()).toEqual({
+        shownField: 'visible',
+        hiddenField: 'secret',
+      });
+
+      const submittedValues: Record<string, unknown>[] = [];
+      component.submitted.subscribe((value) => submittedValues.push(value));
+
+      fixture.debugElement.query(By.css('form')).triggerEventHandler('ngSubmit', null);
+      fixture.detectChanges();
+
+      expect(submittedValues.length).toBe(1);
+      expect(submittedValues[0]).toEqual({
+        shownField: 'visible',
+        hiddenField: 'secret',
+      });
+    });
+  });
 });

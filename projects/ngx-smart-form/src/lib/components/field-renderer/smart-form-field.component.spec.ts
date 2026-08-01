@@ -140,6 +140,24 @@ describe('SmartFormFieldComponent', () => {
     expect(fixture.debugElement.query(By.css('.ngx-smart-form-field'))).toBeNull();
   });
 
+  it('should set aria-required on required fields', () => {
+    setupField(
+      'name',
+      { type: 'text', label: 'Name', validation: { required: true } },
+      new FormControl(''),
+    );
+
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.getAttribute('aria-required')).toBe('true');
+  });
+
+  it('should not set aria-required on optional fields', () => {
+    setupField('name', { type: 'text', label: 'Name' }, new FormControl(''));
+
+    const input = fixture.debugElement.query(By.css('input'));
+    expect(input.nativeElement.getAttribute('aria-required')).toBeNull();
+  });
+
   it('should show validation errors after the control is touched', () => {
     const control = new FormControl('', Validators.required);
 

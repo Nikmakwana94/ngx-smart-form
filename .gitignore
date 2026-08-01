@@ -89,6 +89,10 @@ out
 /projects/ngx-smart-form/.angular
 /_temp_angular
 
+# Copied into the library project before ng-packagr build (see scripts/copy-package-docs.mjs)
+/projects/ngx-smart-form/README.md
+/projects/ngx-smart-form/LICENSE
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

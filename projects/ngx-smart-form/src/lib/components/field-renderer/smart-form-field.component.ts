@@ -41,6 +41,7 @@ import { isRenderableFieldType } from './field-type.registry';
                 type="checkbox"
                 [formControl]="control()"
                 [attr.aria-invalid]="showError() ? true : null"
+                [attr.aria-required]="isRequired() ? true : null"
                 [attr.aria-describedby]="describedBy()"
               />
               @if (fieldConfig().label) {
@@ -65,6 +66,7 @@ import { isRenderableFieldType } from './field-type.registry';
               [attr.aria-labelledby]="fieldConfig().label ? groupLabelId() : null"
               [attr.aria-describedby]="describedBy()"
               [attr.aria-invalid]="showError() ? true : null"
+              [attr.aria-required]="isRequired() ? true : null"
             >
               @for (option of radioOptions(); track optionTrack($index, option)) {
                 <div class="ngx-smart-form-radio-option">
@@ -103,6 +105,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [placeholder]="fieldConfig().placeholder ?? ''"
                   [readonly]="fieldConfig().readonly === true"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 />
               }
@@ -115,6 +118,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [placeholder]="fieldConfig().placeholder ?? ''"
                   [readonly]="fieldConfig().readonly === true"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 />
               }
@@ -127,6 +131,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [placeholder]="fieldConfig().placeholder ?? ''"
                   [readonly]="fieldConfig().readonly === true"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 />
               }
@@ -142,6 +147,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [attr.max]="numberMax()"
                   [attr.step]="numberStep()"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 />
               }
@@ -155,6 +161,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [attr.rows]="textareaRows()"
                   [attr.aria-describedby]="describedBy()"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                 ></textarea>
               }
               @case ('select') {
@@ -163,6 +170,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [id]="fieldId()"
                   [formControl]="control()"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 >
                   @if (fieldConfig().placeholder) {
@@ -188,6 +196,7 @@ import { isRenderableFieldType } from './field-type.registry';
                   [attr.min]="dateMin()"
                   [attr.max]="dateMax()"
                   [attr.aria-invalid]="showError() ? true : null"
+                  [attr.aria-required]="isRequired() ? true : null"
                   [attr.aria-describedby]="describedBy()"
                 />
               }
@@ -317,6 +326,10 @@ export class SmartFormFieldComponent {
     () =>
       !this.fieldConfig().hidden &&
       isRenderableFieldType(this.fieldConfig().type),
+  );
+
+  readonly isRequired = computed(
+    () => resolveFieldValidation(this.fieldConfig()).required === true,
   );
 
   readonly fieldCssClass = computed(() => {

@@ -5,6 +5,7 @@
   "description": "Development workspace for the ngx-smart-form Angular library.",
   "scripts": {
     "ng": "ng",
+    "prebuild": "node scripts/copy-package-docs.mjs",
     "build": "ng build ngx-smart-form",
     "build:watch": "ng build ngx-smart-form --watch --configuration development",
     "test": "ng test ngx-smart-form --no-watch --browsers=ChromeHeadless",

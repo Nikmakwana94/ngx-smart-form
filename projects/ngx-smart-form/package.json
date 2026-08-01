@@ -1,6 +1,6 @@
 {
   "name": "ngx-smart-form",
-  "version": "0.0.1",
+  "version": "0.9.0",
   "description": "A flexible, configuration-driven dynamic form library for Angular applications built on Reactive Forms.",
   "keywords": [
     "angular",
@@ -20,6 +20,7 @@
   "bugs": {
     "url": "https://github.com/Nikmakwana94/ngx-smart-form/issues"
   },
+  "homepage": "https://github.com/Nikmakwana94/ngx-smart-form#readme",
   "peerDependencies": {
     "@angular/common": "^19.0.0 || ^20.0.0",
     "@angular/core": "^19.0.0 || ^20.0.0",

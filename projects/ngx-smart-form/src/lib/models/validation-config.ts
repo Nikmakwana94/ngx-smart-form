@@ -24,13 +24,4 @@ export interface SmartFormFieldValidation {
   validators?: ValidatorFn[];
   asyncValidators?: AsyncValidatorFn[];
   messages?: SmartFormValidationMessages;
-  when?: SmartFormConditionalValidation[];
-}
-
-/** Applies validation rules when another field meets a condition. */
-export interface SmartFormConditionalValidation {
-  field: string;
-  equals?: unknown;
-  notEquals?: unknown;
-  validation: Partial<SmartFormFieldValidation>;
 }

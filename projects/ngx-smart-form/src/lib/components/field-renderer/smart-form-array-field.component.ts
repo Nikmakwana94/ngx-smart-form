@@ -39,6 +39,7 @@ import { SmartFormFieldComponent } from './smart-form-field.component';
               type="button"
               class="ngx-smart-form-array-remove"
               [disabled]="removeDisabled()"
+              [attr.aria-label]="removeAriaLabel()"
               (click)="removeItem(index)"
             >
               Remove
@@ -50,6 +51,7 @@ import { SmartFormFieldComponent } from './smart-form-field.component';
           type="button"
           class="ngx-smart-form-array-add"
           [disabled]="addDisabled()"
+          [attr.aria-label]="addAriaLabel()"
           (click)="addItem()"
         >
           + {{ addLabel() }}
@@ -117,6 +119,16 @@ export class SmartFormArrayFieldComponent {
 
   addLabel(): string {
     return this.fieldConfig().item.label ?? 'Add Item';
+  }
+
+  addAriaLabel(): string {
+    const label = this.fieldConfig().item.label ?? 'item';
+    return `Add ${label}`;
+  }
+
+  removeAriaLabel(): string {
+    const label = this.fieldConfig().item.label ?? 'item';
+    return `Remove ${label}`;
   }
 
   itemFieldKey(index: number): string {

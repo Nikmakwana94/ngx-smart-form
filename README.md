@@ -2,7 +2,7 @@
 
 A flexible, configuration-driven dynamic form library for Angular applications. Built on Angular Reactive Forms with strict TypeScript typing and no third-party UI dependencies.
 
-> **Status:** Phase 4 complete — nested groups, FormArray, conditional visibility/enable, custom sync/async validators, and dynamic validation based on other fields.
+> **Status:** v0.9.0 release candidate — Phases 1–4 complete. Structured configuration is the recommended form shape.
 
 ## Features
 
@@ -213,24 +213,37 @@ formConfig: SmartFormConfig = {
 
 ## Supported Field Types
 
-| Type | FormControl | UI rendering |
-| --- | --- | --- |
-| `text` | Available | Available |
-| `email` | Available | Available |
-| `password` | Available | Available |
-| `number` | Available | Available |
-| `textarea` | Available | Available |
-| `select` | Available | Available |
-| `checkbox` | Available | Available |
-| `radio` | Available | Available |
-| `date` | Available | Available |
-| `group` | Available (nested FormGroup) | Available |
-| `array` | Available (FormArray) | Available |
-| `multi-select` | Available | Planned |
-| `autocomplete` | Available | Planned |
-| `date-range` | Available | Planned |
-| `file` | Available | Planned |
-| `custom` | Planned | Planned |
+### Fully supported (builder + visual renderer)
+
+These field types are stable in v0.9.0:
+
+| Field Type | Builder | Visual Renderer | Status |
+| --- | --- | --- | --- |
+| `text` | Yes | Yes | Stable |
+| `email` | Yes | Yes | Stable |
+| `password` | Yes | Yes | Stable |
+| `number` | Yes | Yes | Stable |
+| `textarea` | Yes | Yes | Stable |
+| `select` | Yes | Yes | Stable |
+| `checkbox` | Yes | Yes | Stable |
+| `radio` | Yes | Yes | Stable |
+| `date` | Yes | Yes | Stable |
+| `group` | Yes | Yes | Stable |
+| `array` | Yes | Yes | Stable |
+
+### Builder-only / experimental (not rendered yet)
+
+These types exist in the TypeScript configuration model for future extension. They are **not** rendered by `NgxSmartFormComponent` in v0.9.0:
+
+| Field Type | Builder | Visual Renderer | Status |
+| --- | --- | --- | --- |
+| `multi-select` | Yes | No | Experimental |
+| `autocomplete` | Yes | No | Experimental |
+| `file` | Yes | No | Experimental |
+| `date-range` | Yes | No | Experimental |
+| `custom` | No | No | Experimental / planned |
+
+Do not assume experimental types are fully supported in the UI. Use the builder service directly if you need to create controls for builder-only types programmatically.
 
 Fields with `hidden: true` remain in the `FormGroup` but are not rendered visually. Their controls are disabled so they do not block form validity or submission.
 
@@ -331,7 +344,34 @@ companyName: {
 
 When `accountType` is `individual`, the field stays visible but disabled.
 
-## Hidden, Disabled, and Form Values
+## Form Value and Hidden Fields
+
+Angular Reactive Forms distinguish between **enabled value snapshots** and **raw value snapshots**:
+
+```typescript
+form.value        // enabled controls only
+form.getRawValue() // all controls, including disabled
+```
+
+### v1 contract
+
+| Behavior | Detail |
+| --- | --- |
+| Disabled controls | Excluded from `form.value`, included in `form.getRawValue()` |
+| Hidden fields (`hidden: true` or failed `when`) | Remain in the `FormGroup`, become **disabled**, excluded from validation |
+| `(submitted)` output | Emits `form.getRawValue()` — hidden/disabled values are **included** |
+| Submit button | Uses `form.invalid`, which ignores disabled controls |
+
+Example:
+
+```typescript
+// hiddenField has hidden: true and defaultValue: 'secret'
+form.value;           // { shownField: 'visible' }
+form.getRawValue();    // { shownField: 'visible', hiddenField: 'secret' }
+
+// After submit:
+(submitted)="onSubmit($event)" // $event includes hiddenField
+```
 
 | State | In FormGroup | Rendered | Validates | In `form.value` | In `form.getRawValue()` |
 | --- | --- | --- | --- | --- | --- |
@@ -342,15 +382,68 @@ When `accountType` is `individual`, the field stays visible but disabled.
 
 \*Hidden fields are not rendered. Disabled visible fields are rendered but not editable.
 
-The `(submitted)` event emits `form.getRawValue()`, which includes disabled and hidden control values. Submit button validity uses `form.invalid`, which ignores disabled controls — so hidden required fields do not block submission.
-
-Avoid naming flat-config field keys `fields`, `updateOn`, or `submit`; use the structured `{ fields: { ... } }` shape instead.
-
 Use `form.get('fieldName')` rather than `form.contains('fieldName')` to verify hidden or disabled controls still exist — Angular's `contains()` returns `false` for disabled controls.
+
+## Configuration Shape
+
+### Recommended: structured configuration
+
+Structured configuration is the **canonical** form shape for v0.9.0 and beyond:
+
+```typescript
+const formConfig: SmartFormConfig = {
+  fields: {
+    name: {
+      type: 'text',
+      label: 'Name',
+      validation: { required: true },
+    },
+  },
+  updateOn: 'blur',
+  submit: {
+    label: 'Save',
+  },
+};
+```
+
+Structured configuration leaves room for top-level options:
+
+```text
+fields
+updateOn
+submit
+```
+
+and future form-level settings without naming collisions.
+
+### Also supported: flat configuration
+
+Flat configuration remains supported for simple forms:
+
+```typescript
+const formConfig: SmartFormConfig = {
+  name: {
+    type: 'text',
+    label: 'Name',
+  },
+};
+```
+
+### Reserved keys in flat configuration
+
+When using flat configuration, do **not** use these keys as field names:
+
+```text
+fields
+updateOn
+submit
+```
+
+These names collide with structured top-level properties and can cause ambiguous or invalid configuration. Prefer structured configuration when you need submit-button or form-level options.
 
 ## Reactive Form Configuration
 
-Use either a **flat field map** or a **structured config** with a `fields` wrapper.
+Use either a **flat field map** or the recommended **structured config** with a `fields` wrapper.
 
 ```typescript
 formConfig: SmartFormConfig = {

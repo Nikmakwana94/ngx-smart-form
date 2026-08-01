@@ -63,6 +63,7 @@ export interface SmartFormRadioFieldConfig extends SmartFormFieldConfigBase {
 }
 
 export interface SmartFormMultiSelectFieldConfig extends SmartFormFieldConfigBase {
+  /** @experimental Builder-only configuration. Visual rendering is not currently supported. */
   type: 'multi-select' | 'autocomplete';
   options: SmartFormOption[];
   defaultValue?: unknown;
@@ -80,6 +81,7 @@ export interface SmartFormDateFieldConfig extends SmartFormFieldConfigBase {
   max?: Date | string;
 }
 
+/** @experimental Builder-only configuration. Visual rendering is not currently supported. */
 export interface SmartFormDateRangeFieldConfig extends SmartFormFieldConfigBase {
   type: 'date-range';
   defaultValue?: SmartFormDateRangeValue;
@@ -87,6 +89,7 @@ export interface SmartFormDateRangeFieldConfig extends SmartFormFieldConfigBase 
   max?: Date | string;
 }
 
+/** @experimental Builder-only configuration. Visual rendering is not currently supported. */
 export interface SmartFormFileFieldConfig extends SmartFormFieldConfigBase {
   type: 'file';
   accept?: string;
@@ -126,7 +129,9 @@ export interface SmartFormArrayFieldConfig {
   maxItems?: number;
 }
 
-/** Allows consumers to plug in their own Angular components. */
+/**
+ * @experimental Planned custom component support. Not currently supported by the builder or renderer.
+ */
 export interface SmartFormCustomFieldConfig extends SmartFormFieldConfigBase {
   type: 'custom';
   component: Type<unknown>;

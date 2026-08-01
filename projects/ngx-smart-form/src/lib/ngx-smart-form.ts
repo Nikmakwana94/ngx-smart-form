@@ -29,5 +29,4 @@ export type {
   SmartFormTextFieldConfig,
   SmartFormUpdateOn,
   SmartFormValidationMessages,
-  SmartFormConditionalValidation,
 } from './models';

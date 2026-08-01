@@ -11,7 +11,6 @@ export type {
   SmartFormArrayFieldConfig,
   SmartFormCheckboxFieldConfig,
   SmartFormCondition,
-  SmartFormConditionalValidation,
   SmartFormConfig,
   SmartFormCustomFieldConfig,
   SmartFormDateFieldConfig,
