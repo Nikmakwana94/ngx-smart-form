@@ -2,19 +2,21 @@
 
 A flexible, configuration-driven dynamic form library for Angular applications. Built on Angular Reactive Forms with strict TypeScript typing and no third-party UI dependencies.
 
-> **Status:** This project is in early development. The foundation and type architecture are in place; dynamic form rendering and validation are planned for upcoming releases.
+> **Status:** Phase 1 complete — the Reactive Form engine converts `SmartFormConfig` into Angular `FormGroup` instances. Visual field rendering is still under development.
 
 ## Features
 
 | Feature | Status |
 | --- | --- |
 | Configuration-driven form models (`SmartFormConfig`) | Available |
+| Reactive Forms engine (`SmartFormBuilderService`) | Available |
+| Declarative validation mapping | Available |
+| Default values and disabled controls | Available |
+| Structured config with `updateOn` | Available |
 | Extensible field type definitions | Available |
-| Validation configuration interfaces | Available |
 | UI-framework independence (no Material, Bootstrap, etc.) | Available |
-| Dynamic form renderer | Planned |
-| Reactive Forms integration | Planned |
-| Built-in validators and error messages | Planned |
+| Dynamic field renderer | Planned |
+| Validation error messages UI | Planned |
 | Nested forms and form arrays | Planned |
 | Conditional fields and async validation | Planned |
 | Custom component fields | Planned |
@@ -40,10 +42,9 @@ Compatible with Angular **19** and **20**.
 
 ## Basic Usage
 
-> Dynamic rendering is not yet implemented. The example below shows the intended configuration API.
-
 ```typescript
 import { Component } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import {
   NgxSmartFormComponent,
   SmartFormConfig,
@@ -52,7 +53,12 @@ import {
 @Component({
   selector: 'app-user-form',
   imports: [NgxSmartFormComponent],
-  template: `<ngx-smart-form [config]="formConfig" />`,
+  template: `
+    <ngx-smart-form
+      [config]="formConfig"
+      (formReady)="onFormReady($event)">
+    </ngx-smart-form>
+  `,
 })
 export class UserFormComponent {
   readonly formConfig: SmartFormConfig = {
@@ -69,15 +75,83 @@ export class UserFormComponent {
     age: {
       type: 'number',
       label: 'Age',
-      validation: { min: 18 },
+      min: 18,
     },
   };
+
+  onFormReady(form: FormGroup): void {
+    console.log('Form value:', form.value);
+  }
 }
 ```
 
+## Reactive Form Configuration
+
+The library converts declarative configuration into Angular Reactive Forms. You can use either a **flat field map** or a **structured config** with a `fields` wrapper.
+
+### Structured configuration
+
+```typescript
+formConfig: SmartFormConfig = {
+  fields: {
+    name: {
+      type: 'text',
+      label: 'Name',
+      validation: {
+        required: true,
+        minLength: 3,
+      },
+    },
+    email: {
+      type: 'email',
+      label: 'Email',
+      validation: {
+        required: true,
+        email: true,
+      },
+    },
+  },
+  updateOn: 'blur',
+};
+```
+
+### Flat configuration (also supported)
+
+```typescript
+formConfig: SmartFormConfig = {
+  name: {
+    type: 'text',
+    label: 'Name',
+    required: true, // shorthand for validation.required
+  },
+  age: {
+    type: 'number',
+    label: 'Age',
+    min: 18, // shorthand for validation.min
+  },
+};
+```
+
+### Using the builder service directly
+
+```typescript
+import { inject } from '@angular/core';
+import { SmartFormBuilderService, SmartFormConfig } from 'ngx-smart-form';
+
+const builder = inject(SmartFormBuilderService);
+
+const config: SmartFormConfig = {
+  username: { type: 'text', defaultValue: 'john', disabled: true },
+};
+
+const form = builder.buildForm(config);
+```
+
+> Visual field rendering is not yet implemented. The component builds the internal `FormGroup` and exposes it via `(formReady)`.
+
 ## Configuration
 
-Forms are defined as a configuration object keyed by control name. Each field specifies a `type`, optional display properties, and optional validation rules.
+Forms are defined as a configuration object. Each field specifies a `type`, optional display properties, and optional validation rules.
 
 ```typescript
 const formConfig: SmartFormConfig = {
@@ -96,7 +170,7 @@ See the `SmartFormFieldConfig` union type for all supported field shapes.
 
 ## Validation
 
-Validation is configured declaratively on each field via the `validation` property:
+Validation is configured via the `validation` property or field-level shorthand (`required`, `min`, `max` on number fields):
 
 ```typescript
 {
@@ -115,50 +189,52 @@ Validation is configured declaratively on each field via the `validation` proper
 }
 ```
 
-Supported validation options (implementation planned):
+**Currently supported** (mapped to Angular `Validators`):
 
 - `required`, `min`, `max`, `minLength`, `maxLength`, `pattern`, `email`
-- Custom sync and async validators
+- Custom sync validators via `validation.validators`
+
+**Planned:**
+
+- Custom validation messages UI
+- Async validators
 - Conditional validation via `when`
-- Custom validation messages
 
 ## Supported Field Types
 
-The type system is prepared for the following field types:
-
-| Type | Status |
-| --- | --- |
-| `text` | Planned |
-| `email` | Planned |
-| `password` | Planned |
-| `number` | Planned |
-| `textarea` | Planned |
-| `select` | Planned |
-| `multi-select` | Planned |
-| `checkbox` | Planned |
-| `radio` | Planned |
-| `date` | Planned |
-| `date-range` | Planned |
-| `file` | Planned |
-| `autocomplete` | Planned |
-| `custom` | Planned |
+| Type | FormControl support | UI rendering |
+| --- | --- | --- |
+| `text` | Available | Planned |
+| `email` | Available | Planned |
+| `password` | Available | Planned |
+| `number` | Available | Planned |
+| `textarea` | Available | Planned |
+| `select` | Available | Planned |
+| `multi-select` | Available | Planned |
+| `checkbox` | Available | Planned |
+| `radio` | Available | Planned |
+| `date` | Available | Planned |
+| `date-range` | Available | Planned |
+| `file` | Available | Planned |
+| `autocomplete` | Available | Planned |
+| `custom` | Planned | Planned |
 
 ## Roadmap
 
-### Phase 1
+### Phase 1 ✅
 
 - Dynamic form configuration
-- Basic field types
-- Reactive Forms integration
-- Validation
-- Error messages
+- Reactive Forms engine
+- Validation mapping
+- Default values and disabled controls
 
 ### Phase 2
 
-- Nested forms
-- Form arrays
+- Visual field renderer
+- Basic field UI components
+- Validation error messages
+- Nested forms and form arrays
 - Conditional fields
-- Custom validators
 
 ### Phase 3
 

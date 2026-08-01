@@ -7,6 +7,9 @@ import {
 } from './field-types';
 import { SmartFormFieldValidation } from './validation-config';
 
+/** When the form or individual controls emit value updates. */
+export type SmartFormUpdateOn = 'change' | 'blur' | 'submit';
+
 /** Common properties shared by all field configurations. */
 export interface SmartFormFieldConfigBase {
   type: SmartFormFieldType;
@@ -16,6 +19,8 @@ export interface SmartFormFieldConfigBase {
   disabled?: boolean;
   readonly?: boolean;
   hidden?: boolean;
+  /** Shorthand for `validation.required`. */
+  required?: boolean;
   validation?: SmartFormFieldValidation;
   cssClass?: string;
 }
@@ -30,6 +35,10 @@ export interface SmartFormNumberFieldConfig extends SmartFormFieldConfigBase {
   type: 'number';
   defaultValue?: number;
   step?: number;
+  /** Shorthand for `validation.min`. */
+  min?: number;
+  /** Shorthand for `validation.max`. */
+  max?: number;
 }
 
 export interface SmartFormSelectFieldConfig extends SmartFormFieldConfigBase {
@@ -80,5 +89,17 @@ export type SmartFormFieldConfig =
   | SmartFormFileFieldConfig
   | SmartFormCustomFieldConfig;
 
-/** Top-level form configuration keyed by control name. */
-export type SmartFormConfig = Record<string, SmartFormFieldConfig>;
+/** Field map keyed by control name. */
+export type SmartFormFieldsConfig = Record<string, SmartFormFieldConfig>;
+
+/** Structured form configuration with optional form-level options. */
+export interface SmartFormStructuredConfig {
+  fields: SmartFormFieldsConfig;
+  updateOn?: SmartFormUpdateOn;
+}
+
+/**
+ * Top-level form configuration.
+ * Accepts either a flat field map or a structured object with `fields`.
+ */
+export type SmartFormConfig = SmartFormFieldsConfig | SmartFormStructuredConfig;

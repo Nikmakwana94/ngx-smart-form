@@ -2,7 +2,10 @@
  * Public API Surface of ngx-smart-form
  */
 
-export { NgxSmartFormComponent } from './lib/ngx-smart-form';
+export {
+  NgxSmartFormComponent,
+  SmartFormBuilderService,
+} from './lib/ngx-smart-form';
 
 export type {
   SmartFormCheckboxFieldConfig,
@@ -14,12 +17,15 @@ export type {
   SmartFormDateRangeValue,
   SmartFormFieldConfig,
   SmartFormFieldConfigBase,
+  SmartFormFieldsConfig,
   SmartFormFieldType,
   SmartFormFieldValidation,
   SmartFormFileFieldConfig,
   SmartFormNumberFieldConfig,
   SmartFormSelectFieldConfig,
   SmartFormSelectOption,
+  SmartFormStructuredConfig,
   SmartFormTextFieldConfig,
+  SmartFormUpdateOn,
   SmartFormValidationMessages,
 } from './lib/ngx-smart-form';
