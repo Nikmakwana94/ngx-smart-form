@@ -10,6 +10,7 @@ import { merge } from 'rxjs';
 
 import {
   SmartFormFieldConfig,
+  SmartFormLeafFieldConfig,
   SmartFormNumberFieldConfig,
   SmartFormRadioFieldConfig,
   SmartFormSelectFieldConfig,
@@ -17,6 +18,7 @@ import {
 } from '../../models/form-config';
 import { SmartFormOption } from '../../models/field-types';
 import { resolveFieldValidation } from '../../utils/smart-form-config.utils';
+import { fieldPathToId } from '../../utils/smart-form-path.utils';
 import { formatDateForInput } from '../../utils/smart-form-date.utils';
 import {
   resolveValidationMessage,
@@ -281,7 +283,8 @@ import { isRenderableFieldType } from './field-type.registry';
 })
 export class SmartFormFieldComponent {
   readonly fieldKey = input.required<string>();
-  readonly fieldConfig = input.required<SmartFormFieldConfig>();
+  readonly fieldPath = input<string>('');
+  readonly fieldConfig = input.required<SmartFormLeafFieldConfig>();
   readonly control = input.required<FormControl>();
   readonly submitAttempted = input<boolean>(false);
 
@@ -302,7 +305,10 @@ export class SmartFormFieldComponent {
     });
   }
 
-  readonly fieldId = computed(() => `ngx-smart-form-${this.fieldKey()}`);
+  readonly fieldId = computed(() => {
+    const path = this.fieldPath() || this.fieldKey();
+    return `ngx-smart-form-${fieldPathToId(path)}`;
+  });
   readonly groupLabelId = computed(() => `${this.fieldId()}-label`);
   readonly hintId = computed(() => `${this.fieldId()}-hint`);
   readonly errorId = computed(() => `${this.fieldId()}-error`);

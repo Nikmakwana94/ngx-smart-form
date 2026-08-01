@@ -1,5 +1,6 @@
 import { Type } from '@angular/core';
 
+import { SmartFormCondition } from './condition-config';
 import {
   SmartFormDateRangeValue,
   SmartFormFieldType,
@@ -16,7 +17,7 @@ export interface SmartFormSubmitConfig {
   visible?: boolean;
 }
 
-/** Common properties shared by all field configurations. */
+/** Common properties shared by leaf field configurations. */
 export interface SmartFormFieldConfigBase {
   type: SmartFormFieldType;
   label?: string;
@@ -29,6 +30,10 @@ export interface SmartFormFieldConfigBase {
   required?: boolean;
   validation?: SmartFormFieldValidation;
   cssClass?: string;
+  /** Show the field only when the condition passes. */
+  when?: SmartFormCondition;
+  /** Enable the field only when the condition passes. */
+  enabledWhen?: SmartFormCondition;
 }
 
 export interface SmartFormTextFieldConfig extends SmartFormFieldConfigBase {
@@ -41,9 +46,7 @@ export interface SmartFormNumberFieldConfig extends SmartFormFieldConfigBase {
   type: 'number';
   defaultValue?: number;
   step?: number;
-  /** Shorthand for `validation.min`. */
   min?: number;
-  /** Shorthand for `validation.max`. */
   max?: number;
 }
 
@@ -90,6 +93,39 @@ export interface SmartFormFileFieldConfig extends SmartFormFieldConfigBase {
   multiple?: boolean;
 }
 
+/** Nested group of fields rendered as a child FormGroup. */
+export interface SmartFormGroupFieldConfig {
+  type: 'group';
+  label?: string;
+  hint?: string;
+  hidden?: boolean;
+  cssClass?: string;
+  when?: SmartFormCondition;
+  enabledWhen?: SmartFormCondition;
+  fields: SmartFormFieldsConfig;
+}
+
+/** Leaf field types that can be used as FormArray items. */
+export type SmartFormArrayItemConfig = Exclude<
+  SmartFormLeafFieldConfig,
+  SmartFormFileFieldConfig
+>;
+
+/** Repeatable array of fields rendered as a FormArray. */
+export interface SmartFormArrayFieldConfig {
+  type: 'array';
+  label?: string;
+  hint?: string;
+  hidden?: boolean;
+  cssClass?: string;
+  when?: SmartFormCondition;
+  enabledWhen?: SmartFormCondition;
+  item: SmartFormArrayItemConfig;
+  defaultValue?: readonly unknown[];
+  minItems?: number;
+  maxItems?: number;
+}
+
 /** Allows consumers to plug in their own Angular components. */
 export interface SmartFormCustomFieldConfig extends SmartFormFieldConfigBase {
   type: 'custom';
@@ -97,7 +133,8 @@ export interface SmartFormCustomFieldConfig extends SmartFormFieldConfigBase {
   inputs?: Record<string, unknown>;
 }
 
-export type SmartFormFieldConfig =
+/** Leaf field configuration (controls that map to a single FormControl). */
+export type SmartFormLeafFieldConfig =
   | SmartFormTextFieldConfig
   | SmartFormNumberFieldConfig
   | SmartFormSelectFieldConfig
@@ -108,6 +145,11 @@ export type SmartFormFieldConfig =
   | SmartFormDateRangeFieldConfig
   | SmartFormFileFieldConfig
   | SmartFormCustomFieldConfig;
+
+export type SmartFormFieldConfig =
+  | SmartFormLeafFieldConfig
+  | SmartFormGroupFieldConfig
+  | SmartFormArrayFieldConfig;
 
 /** Field map keyed by control name. */
 export type SmartFormFieldsConfig = Record<string, SmartFormFieldConfig>;

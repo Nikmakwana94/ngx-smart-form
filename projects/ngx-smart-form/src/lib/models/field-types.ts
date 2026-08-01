@@ -16,7 +16,9 @@ export type SmartFormFieldType =
   | 'date-range'
   | 'file'
   | 'autocomplete'
-  | 'custom';
+  | 'custom'
+  | 'group'
+  | 'array';
 
 /** Option model for select, radio, and other option-based fields. */
 export interface SmartFormOption<T = unknown> {

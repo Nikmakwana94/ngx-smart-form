@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
-import { SmartFormFieldConfig } from '../../models/form-config';
+import { SmartFormFieldConfig, SmartFormLeafFieldConfig } from '../../models/form-config';
 import { SmartFormFieldComponent } from './smart-form-field.component';
 
 describe('SmartFormFieldComponent', () => {
@@ -10,7 +10,7 @@ describe('SmartFormFieldComponent', () => {
 
   function setupField(
     fieldKey: string,
-    fieldConfig: SmartFormFieldConfig,
+    fieldConfig: SmartFormLeafFieldConfig,
     control: FormControl,
     submitAttempted = false,
   ): void {

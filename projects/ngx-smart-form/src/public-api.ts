@@ -8,7 +8,9 @@ export {
 } from './lib/ngx-smart-form';
 
 export type {
+  SmartFormArrayFieldConfig,
   SmartFormCheckboxFieldConfig,
+  SmartFormCondition,
   SmartFormConditionalValidation,
   SmartFormConfig,
   SmartFormCustomFieldConfig,
@@ -21,6 +23,8 @@ export type {
   SmartFormFieldType,
   SmartFormFieldValidation,
   SmartFormFileFieldConfig,
+  SmartFormGroupFieldConfig,
+  SmartFormLeafFieldConfig,
   SmartFormMultiSelectFieldConfig,
   SmartFormNumberFieldConfig,
   SmartFormOption,

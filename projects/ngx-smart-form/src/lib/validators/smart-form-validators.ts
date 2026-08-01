@@ -1,4 +1,4 @@
-import { ValidatorFn, Validators } from '@angular/forms';
+import { AsyncValidatorFn, ValidatorFn, Validators } from '@angular/forms';
 
 import { SmartFormFieldType } from '../models/field-types';
 import { SmartFormFieldValidation } from '../models/validation-config';
@@ -53,4 +53,11 @@ export function buildValidators(
   }
 
   return validators;
+}
+
+/** Maps declarative async validation configuration to Angular AsyncValidatorFn instances. */
+export function buildAsyncValidators(
+  validation: SmartFormFieldValidation,
+): AsyncValidatorFn[] {
+  return validation.asyncValidators ? [...validation.asyncValidators] : [];
 }

@@ -6,7 +6,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import {
   SmartFormConfig,
@@ -14,11 +14,13 @@ import {
   SmartFormSubmitConfig,
 } from '../models';
 import { SmartFormBuilderService } from '../services/smart-form-builder.service';
+import { SmartFormDependencyService } from '../services/smart-form-dependency.service';
 import { normalizeSmartFormConfig } from '../utils/smart-form-config.utils';
-import { SmartFormFieldComponent } from './field-renderer/smart-form-field.component';
+import { SmartFormFieldHostComponent } from './field-renderer/smart-form-field-host.component';
 
 export interface SmartFormFieldEntry {
   key: string;
+  path: string;
   config: SmartFormFieldConfig;
 }
 
@@ -29,7 +31,8 @@ const DEFAULT_SUBMIT_CONFIG: SmartFormSubmitConfig = {
 
 @Component({
   selector: 'ngx-smart-form',
-  imports: [ReactiveFormsModule, SmartFormFieldComponent],
+  imports: [ReactiveFormsModule, SmartFormFieldHostComponent],
+  providers: [SmartFormDependencyService],
   template: `
     <div class="ngx-smart-form" data-testid="ngx-smart-form">
       @if (formGroup(); as form) {
@@ -39,11 +42,13 @@ const DEFAULT_SUBMIT_CONFIG: SmartFormSubmitConfig = {
           (ngSubmit)="onSubmit()"
           novalidate
         >
-          @for (field of fieldEntries(); track field.key) {
-            <ngx-smart-form-field
+          @for (field of fieldEntries(); track field.path) {
+            <ngx-smart-form-field-host
+              [rootForm]="form"
+              [formGroup]="form"
               [fieldKey]="field.key"
+              [fieldPath]="field.path"
               [fieldConfig]="field.config"
-              [control]="getControl(form, field.key)"
               [submitAttempted]="submitAttempted()"
             />
           }
@@ -93,6 +98,8 @@ const DEFAULT_SUBMIT_CONFIG: SmartFormSubmitConfig = {
 })
 export class NgxSmartFormComponent {
   private readonly builder = inject(SmartFormBuilderService);
+  private readonly dependencyService = inject(SmartFormDependencyService);
+  private dependencyCleanup: (() => void) | null = null;
 
   readonly config = input<SmartFormConfig | null>(null);
   readonly formReady = output<FormGroup>();
@@ -104,7 +111,7 @@ export class NgxSmartFormComponent {
   readonly submitConfig = signal<SmartFormSubmitConfig>(DEFAULT_SUBMIT_CONFIG);
 
   constructor() {
-    effect(() => {
+    effect((onCleanup) => {
       const config = this.config();
 
       if (!config) {
@@ -112,6 +119,8 @@ export class NgxSmartFormComponent {
         this.fieldEntries.set([]);
         this.submitAttempted.set(false);
         this.submitConfig.set(DEFAULT_SUBMIT_CONFIG);
+        this.dependencyCleanup?.();
+        this.dependencyCleanup = null;
         return;
       }
 
@@ -119,6 +128,7 @@ export class NgxSmartFormComponent {
       this.fieldEntries.set(
         Object.entries(normalized.fields).map(([key, fieldConfig]) => ({
           key,
+          path: key,
           config: fieldConfig,
         })),
       );
@@ -131,11 +141,19 @@ export class NgxSmartFormComponent {
       this.formGroup.set(form);
       this.submitAttempted.set(false);
       this.formReady.emit(form);
-    });
-  }
 
-  getControl(form: FormGroup, fieldKey: string): FormControl {
-    return form.get(fieldKey) as FormControl;
+      this.dependencyCleanup?.();
+      this.dependencyCleanup = this.dependencyService.connect(
+        form,
+        normalized.fields,
+      );
+
+      onCleanup(() => {
+        this.dependencyCleanup?.();
+        this.dependencyCleanup = null;
+        this.dependencyService.disconnect();
+      });
+    });
   }
 
   onSubmit(): void {

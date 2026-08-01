@@ -1,4 +1,5 @@
-import { FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 import { SmartFormConfigError } from '../errors/smart-form-config.error';
 import { SmartFormConfig } from '../models/form-config';
@@ -377,6 +378,138 @@ describe('SmartFormBuilderService', () => {
       service.buildForm(config);
 
       expect(config).toEqual(snapshot);
+    });
+  });
+
+  describe('Phase 4 advanced forms', () => {
+    it('should build nested FormGroup structures', () => {
+      const config: SmartFormConfig = {
+        name: { type: 'text', label: 'Name' },
+        address: {
+          type: 'group',
+          label: 'Address',
+          fields: {
+            street: { type: 'text', label: 'Street' },
+            city: { type: 'text', label: 'City' },
+          },
+        },
+      };
+
+      const form = service.buildForm(config);
+      const address = form.get('address');
+
+      expect(address).toBeInstanceOf(FormGroup);
+      expect(form.get('address.street')).toBeTruthy();
+      expect(form.get('address.city')).toBeTruthy();
+    });
+
+    it('should build FormArray with initial values', () => {
+      const config: SmartFormConfig = {
+        skills: {
+          type: 'array',
+          item: { type: 'text', label: 'Skill' },
+          defaultValue: ['Angular', 'TypeScript'],
+        },
+      };
+
+      const form = service.buildForm(config);
+      const skills = form.get('skills');
+
+      expect(skills).toBeTruthy();
+      expect(skills?.value).toEqual(['Angular', 'TypeScript']);
+    });
+
+    it('should validate FormArray minItems and maxItems', () => {
+      const config: SmartFormConfig = {
+        skills: {
+          type: 'array',
+          item: { type: 'text', label: 'Skill' },
+          defaultValue: ['Angular'],
+          minItems: 2,
+        },
+      };
+
+      const form = service.buildForm(config);
+      expect(form.get('skills')?.valid).toBeFalse();
+    });
+
+    it('should attach custom sync validators', () => {
+      const validator: ValidatorFn = (control) =>
+        control.value === 'admin' ? null : { reserved: true };
+
+      const config: SmartFormConfig = {
+        username: {
+          type: 'text',
+          validation: {
+            validators: [validator],
+          },
+        },
+      };
+
+      const form = service.buildForm(config);
+      form.get('username')?.setValue('guest');
+      expect(form.get('username')?.hasError('reserved')).toBeTrue();
+    });
+
+    it('should attach async validators', fakeAsync(() => {
+      const asyncValidator = () =>
+        new Promise<null>((resolve) => {
+          setTimeout(() => resolve(null), 10);
+        });
+
+      const config: SmartFormConfig = {
+        username: {
+          type: 'text',
+          validation: {
+            asyncValidators: [asyncValidator],
+          },
+        },
+      };
+
+      const form = service.buildForm(config);
+      const control = form.get('username');
+
+      expect(control?.status).toBe('PENDING');
+
+      tick(10);
+
+      expect(control?.status).toBe('VALID');
+    }));
+
+    it('should resolve async validators to INVALID when errors are returned', fakeAsync(() => {
+      const asyncValidator = () =>
+        new Promise<{ usernameTaken: true }>((resolve) => {
+          setTimeout(() => resolve({ usernameTaken: true }), 10);
+        });
+
+      const config: SmartFormConfig = {
+        username: {
+          type: 'text',
+          validation: {
+            asyncValidators: [asyncValidator],
+          },
+        },
+      };
+
+      const form = service.buildForm(config);
+      const control = form.get('username');
+
+      expect(control?.status).toBe('PENDING');
+
+      tick(10);
+
+      expect(control?.status).toBe('INVALID');
+      expect(control?.hasError('usernameTaken')).toBeTrue();
+    }));
+
+    it('should keep hidden fields in the FormGroup', () => {
+      const form = service.buildForm({
+        shownField: { type: 'text', label: 'Shown' },
+        hiddenField: { type: 'text', label: 'Hidden', hidden: true },
+      });
+
+      expect(form.get('hiddenField')).toBeTruthy();
+      expect(form.get('shownField')).toBeTruthy();
     });
   });
 });

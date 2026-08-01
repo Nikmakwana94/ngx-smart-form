@@ -110,6 +110,10 @@ function validateFields(fields: SmartFormFieldsConfig): void {
 export function resolveFieldValidation(
   field: SmartFormFieldConfig,
 ): SmartFormFieldValidation {
+  if (field.type === 'group' || field.type === 'array') {
+    return {};
+  }
+
   const validation: SmartFormFieldValidation = {
     ...(field.validation ?? {}),
   };
@@ -142,6 +146,10 @@ export function resolveDefaultValue(field: SmartFormFieldConfig): unknown {
   }
 
   switch (field.type) {
+    case 'group':
+      return null;
+    case 'array':
+      return field.defaultValue ?? [];
     case 'checkbox':
       return false;
     case 'multi-select':

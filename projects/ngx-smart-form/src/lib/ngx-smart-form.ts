@@ -2,7 +2,9 @@ export { NgxSmartFormComponent } from './components/ngx-smart-form.component';
 export { SmartFormBuilderService } from './services/smart-form-builder.service';
 
 export type {
+  SmartFormArrayFieldConfig,
   SmartFormCheckboxFieldConfig,
+  SmartFormCondition,
   SmartFormConfig,
   SmartFormCustomFieldConfig,
   SmartFormDateFieldConfig,
@@ -14,6 +16,8 @@ export type {
   SmartFormFieldType,
   SmartFormFieldValidation,
   SmartFormFileFieldConfig,
+  SmartFormGroupFieldConfig,
+  SmartFormLeafFieldConfig,
   SmartFormMultiSelectFieldConfig,
   SmartFormNumberFieldConfig,
   SmartFormOption,

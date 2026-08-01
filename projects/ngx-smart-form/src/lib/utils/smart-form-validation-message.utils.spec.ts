@@ -46,6 +46,16 @@ describe('smart-form-validation-message.utils', () => {
         resolveValidationMessage({ email: true } as ValidationErrors),
       ).toBe('Please enter a valid email address.');
     });
+
+    it('should return custom messages for async validator error keys', () => {
+      const messages: SmartFormValidationMessages = {
+        usernameTaken: 'This username is already taken.',
+      };
+
+      expect(
+        resolveValidationMessage({ usernameTaken: true }, messages),
+      ).toBe('This username is already taken.');
+    });
   });
 
   describe('shouldShowFieldError', () => {

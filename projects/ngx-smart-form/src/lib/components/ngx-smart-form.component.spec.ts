@@ -3,6 +3,7 @@ import { FormGroup } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 
 import { SmartFormBuilderService } from '../services/smart-form-builder.service';
+import { SmartFormDependencyService } from '../services/smart-form-dependency.service';
 import { NgxSmartFormComponent } from './ngx-smart-form.component';
 
 describe('NgxSmartFormComponent', () => {
@@ -111,6 +112,18 @@ describe('NgxSmartFormComponent', () => {
     expect(builder.buildForm).toHaveBeenCalled();
   });
 
+  it('should connect SmartFormDependencyService when config is provided', () => {
+    const dependency = fixture.debugElement.injector.get(SmartFormDependencyService);
+    spyOn(dependency, 'connect').and.callThrough();
+
+    fixture.componentRef.setInput('config', {
+      name: { type: 'text' },
+    });
+    fixture.detectChanges();
+
+    expect(dependency.connect).toHaveBeenCalled();
+  });
+
   describe('Phase 2 visual rendering', () => {
     it('should render multiple configured fields', () => {
       fixture.componentRef.setInput('config', {
@@ -129,13 +142,13 @@ describe('NgxSmartFormComponent', () => {
 
     it('should keep hidden fields in the FormGroup without rendering them', () => {
       fixture.componentRef.setInput('config', {
-        visible: { type: 'text', label: 'Visible' },
+        shownField: { type: 'text', label: 'Visible' },
         hiddenField: { type: 'text', label: 'Hidden', hidden: true },
       });
       fixture.detectChanges();
 
       const form = component.formGroup();
-      expect(form?.contains('hiddenField')).toBeTrue();
+      expect(form?.get('hiddenField')).toBeTruthy();
       expect(fixture.debugElement.queryAll(By.css('.ngx-smart-form-field')).length).toBe(1);
     });
 
@@ -257,6 +270,67 @@ describe('NgxSmartFormComponent', () => {
       fixture.detectChanges();
 
       expect(fixture.debugElement.query(By.css('.ngx-smart-form-submit')).nativeElement.disabled).toBeFalse();
+    });
+  });
+
+  describe('Phase 4 advanced rendering', () => {
+    it('should render nested group fields', () => {
+      fixture.componentRef.setInput('config', {
+        name: { type: 'text', label: 'Name' },
+        address: {
+          type: 'group',
+          label: 'Address',
+          fields: {
+            street: { type: 'text', label: 'Street' },
+            city: { type: 'text', label: 'City' },
+          },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.query(By.css('fieldset.ngx-smart-form-group'))).toBeTruthy();
+      expect(fixture.debugElement.queryAll(By.css('input[type="text"]')).length).toBe(3);
+    });
+
+    it('should render FormArray items and support add/remove', () => {
+      fixture.componentRef.setInput('config', {
+        skills: {
+          type: 'array',
+          label: 'Skills',
+          item: { type: 'text', label: 'Skill' },
+          defaultValue: ['Angular'],
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.queryAll(By.css('.ngx-smart-form-array-item')).length).toBe(1);
+
+      fixture.debugElement.query(By.css('.ngx-smart-form-array-add')).nativeElement.click();
+      fixture.detectChanges();
+
+      expect(component.formGroup()?.get('skills')?.value.length).toBe(2);
+    });
+
+    it('should conditionally show fields based on when configuration', () => {
+      fixture.componentRef.setInput('config', {
+        accountType: { type: 'select', label: 'Account Type', options: [
+          { label: 'Individual', value: 'individual' },
+          { label: 'Company', value: 'company' },
+        ], defaultValue: 'individual' },
+        companyName: {
+          type: 'text',
+          label: 'Company Name',
+          when: { field: 'accountType', equals: 'company' },
+        },
+      });
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.queryAll(By.css('input[type="text"]')).length).toBe(0);
+
+      component.formGroup()?.get('accountType')?.setValue('company');
+      fixture.detectChanges();
+
+      expect(fixture.debugElement.queryAll(By.css('input[type="text"]')).length).toBe(1);
     });
   });
 });
