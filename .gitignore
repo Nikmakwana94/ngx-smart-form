@@ -80,8 +80,14 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 .output
+
+# Angular
+/dist
+/.angular/cache
+/coverage
+/projects/ngx-smart-form/.angular
+/_temp_angular
 
 # Gatsby files
 .cache/

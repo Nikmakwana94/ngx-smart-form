@@ -1,0 +1,32 @@
+{
+  "name": "ngx-smart-form",
+  "version": "0.0.1",
+  "description": "A flexible, configuration-driven dynamic form library for Angular applications built on Reactive Forms.",
+  "keywords": [
+    "angular",
+    "forms",
+    "reactive-forms",
+    "dynamic-forms",
+    "form-builder",
+    "validation",
+    "typescript"
+  ],
+  "author": "Nikhil Makwana",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nikmakwana94/ngx-smart-form.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Nikmakwana94/ngx-smart-form/issues"
+  },
+  "peerDependencies": {
+    "@angular/common": "^19.0.0 || ^20.0.0",
+    "@angular/core": "^19.0.0 || ^20.0.0",
+    "@angular/forms": "^19.0.0 || ^20.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
